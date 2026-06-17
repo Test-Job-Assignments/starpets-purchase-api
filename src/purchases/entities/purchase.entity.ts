@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, Unique } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  Unique,
+} from 'typeorm';
 import AbstractEntity from '@/common/entities/abstract.entity';
 import UserEntity from '@/users/entities/user.entity';
 import ProductEntity from '@/products/entities/product.entity';
@@ -6,7 +13,7 @@ import ProductEntity from '@/products/entities/product.entity';
 @Entity('purchases')
 @Unique('ux_purchases_product_id', ['productId'])
 export default class PurchaseEntity extends AbstractEntity {
-  @Column('uuid', { name: 'product_id'})
+  @Column('uuid', { name: 'product_id' })
   productId!: string;
 
   @OneToOne(() => ProductEntity)
@@ -32,6 +39,9 @@ export default class PurchaseEntity extends AbstractEntity {
 
   // Set explicitly via NOW() in raw SQL — purchases are inserted through
   // manager.query() inside the purchase transaction, bypassing @CreateDateColumn.
-  @Column('timestamp with time zone', { name: 'created_at', default: () => 'NOW()' })
+  @Column('timestamp with time zone', {
+    name: 'created_at',
+    default: () => 'NOW()',
+  })
   createdAt!: Date;
 }

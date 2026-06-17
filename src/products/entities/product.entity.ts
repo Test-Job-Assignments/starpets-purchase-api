@@ -5,7 +5,10 @@ import { ProductStatuses } from '../enums/product-statuses.enum';
 
 @Entity('products')
 @Check('price_positive', '"price" > 0')
-@Check('status_valid', `"status" IN ('${ProductStatuses.AVAILABLE}', '${ProductStatuses.SOLD}')`)
+@Check(
+  'status_valid',
+  `"status" IN ('${ProductStatuses.AVAILABLE}', '${ProductStatuses.SOLD}')`,
+)
 export default class ProductEntity extends AbstractEntity {
   @Column('uuid', { name: 'seller_id' })
   sellerId!: string;

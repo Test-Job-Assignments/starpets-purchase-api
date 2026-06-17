@@ -21,6 +21,9 @@ export default class OutboxEventEntity extends AbstractEntity {
 
   // Set explicitly via NOW() in raw SQL — outbox rows are inserted through
   // manager.query() inside the purchase transaction, bypassing @CreateDateColumn.
-  @Column('timestamp with time zone', { name: 'created_at', default: () => 'NOW()' })
+  @Column('timestamp with time zone', {
+    name: 'created_at',
+    default: () => 'NOW()',
+  })
   createdAt!: Date;
 }

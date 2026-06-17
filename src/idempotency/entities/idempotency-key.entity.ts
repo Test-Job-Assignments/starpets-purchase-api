@@ -21,9 +21,15 @@ export default class IdempotencyKeyEntity {
   // created_at/updated_at are set explicitly via NOW() in raw SQL (INSERT ... ON CONFLICT / UPDATE).
   // Plain columns, not @CreateDateColumn/@UpdateDateColumn — those only fire through
   // repository .save(), and the idempotency flow runs entirely through manager.query().
-  @Column('timestamp with time zone', { name: 'created_at', default: () => 'NOW()' })
+  @Column('timestamp with time zone', {
+    name: 'created_at',
+    default: () => 'NOW()',
+  })
   createdAt!: Date;
 
-  @Column('timestamp with time zone', { name: 'updated_at', default: () => 'NOW()' })
+  @Column('timestamp with time zone', {
+    name: 'updated_at',
+    default: () => 'NOW()',
+  })
   updatedAt!: Date;
 }
