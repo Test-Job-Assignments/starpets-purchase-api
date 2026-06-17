@@ -21,9 +21,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:integration": "jest --config test/jest-integration.json --runInBand --forceExit",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migration:generate": "npm run typeorm -- migration:generate -d src/database/datasource.ts",
-    "migration:run": "npm run typeorm -- migration:run -d src/database/datasource.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/database/datasource.ts"
+    "migration:generate": "yarn typeorm migration:generate -d src/database/datasource.ts",
+    "migration:run": "yarn typeorm migration:run -d src/database/datasource.ts",
+    "migration:revert": "yarn typeorm migration:revert -d src/database/datasource.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -27,13 +27,6 @@ export default class PurchaseEntity extends AbstractEntity {
   @JoinColumn({ name: 'buyer_id' })
   buyer?: UserEntity;
 
-  @Column('uuid', { name: 'seller_id' })
-  sellerId!: string;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'seller_id' })
-  seller?: UserEntity;
-
   @Column('bigint', { name: 'price_paid' })
   pricePaid!: string;
 
