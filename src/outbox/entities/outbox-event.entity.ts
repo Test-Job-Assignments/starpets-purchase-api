@@ -3,8 +3,6 @@ import AbstractEntity from '@/common/entities/abstract.entity';
 import { OutboxEventTypes } from '../enums/outbox-event-types.enum';
 
 @Entity('outbox_events')
-// Poller reads WHERE published_at IS NULL ORDER BY created_at, id — partial index
-// keeps it small as the table grows; id breaks ties on identical timestamps.
 @Index('ix_outbox_events_unpublished', ['createdAt', 'id'], {
   where: 'published_at IS NULL',
 })

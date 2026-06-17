@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import UserEntity from '@/users/entities/user.entity';
 import ProductEntity from '@/products/entities/product.entity';
@@ -20,7 +21,7 @@ export const dataSourceOptions: DataSourceOptions = {
     OutboxEventEntity,
     IdempotencyKeyEntity,
   ],
-  migrations: ['src/database/migrations/*.ts'],
+  migrations: [join(__dirname, 'migrations', '*.{js,ts}')],
   synchronize: false,
 };
 

@@ -7369,9 +7369,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"starpets-assignment@workspace:.":
+"starpets-assignment-purchase-api@workspace:.":
   version: 0.0.0-use.local
-  resolution: "starpets-assignment@workspace:."
+  resolution: "starpets-assignment-purchase-api@workspace:."
   dependencies:
     "@eslint/js": "npm:^9.18.0"
     "@nestjs/cli": "npm:^11.0.0"
