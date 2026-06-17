@@ -24,12 +24,10 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "baseUrl": "./",
     "paths": {
       "@/*": [
-        "src/*"
-      ],
-    },
-    "ignoreDeprecations": "6.0"
+        "./src/*"
+      ]
+    }
   }
 }
