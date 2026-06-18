@@ -1,16 +1,18 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
-import { IdempotencyStatuses } from '@/idempotency/enums/idempotency-statuses.enum';
-import { IdempotencyKeysRepository } from '@/idempotency/repositories/idempotency-keys.repository';
-import { ProductStatuses } from '@/products/enums/product-statuses.enum';
-import { ProductsRepository } from '@/products/repositories/products.repository';
-import { UsersRepository } from '@/users/repositories/users.repository';
-import { OutboxEventTypes } from '@/outbox/enums/outbox-event-types.enum';
-import { OutboxEvent } from '@/outbox/domain/outbox-event';
-import { OutboxEventsRepository } from '@/outbox/repositories/outbox-events.repository';
-import { Purchase } from './domain/purchase';
-import { PurchasesRepository } from './repositories/purchases.repository';
+
+import { IdempotencyKeysRepository } from '@/idempotency/idempotency-keys.repository';
+import { IdempotencyStatuses } from '@/idempotency/idempotency-statuses.enum';
+import { OutboxEvent } from '@/outbox/outbox-event';
+import { OutboxEventTypes } from '@/outbox/outbox-event-types.enum';
+import { OutboxEventsRepository } from '@/outbox/outbox-events.repository';
+import { ProductStatuses } from '@/products/product-statuses.enum';
+import { ProductsRepository } from '@/products/products.repository';
+import { UsersRepository } from '@/users/users.repository';
+
+import { Purchase } from './purchase';
+import { PurchasesRepository } from './purchases.repository';
 
 export interface CreatePurchaseInput {
   buyerId: string;

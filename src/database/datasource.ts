@@ -1,11 +1,13 @@
 import 'dotenv/config';
+
 import { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import UserEntity from '@/users/entities/user.entity';
-import ProductEntity from '@/products/entities/product.entity';
-import PurchaseEntity from '@/purchases/entities/purchase.entity';
-import OutboxEventEntity from '@/outbox/entities/outbox-event.entity';
-import IdempotencyKeyEntity from '@/idempotency/entities/idempotency-key.entity';
+
+import { IdempotencyKeyEntity } from '@/idempotency/idempotency-key.entity';
+import { OutboxEventEntity } from '@/outbox/outbox-event.entity';
+import { ProductEntity } from '@/products/product.entity';
+import { PurchaseEntity } from '@/purchases/purchase.entity';
+import { UserEntity } from '@/users/user.entity';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
@@ -21,6 +23,7 @@ export const dataSourceOptions: DataSourceOptions = {
     OutboxEventEntity,
     IdempotencyKeyEntity,
   ],
+  logging: true,
   migrations: [join(__dirname, 'migrations', '*.{js,ts}')],
   synchronize: false,
 };

@@ -1,8 +1,4 @@
-import { PrimaryColumn } from 'typeorm';
-
-// PostgreSQL has built-in UUID generation, but not UUIDv7.
-// We generate UUIDv7 in application code before insert.
-export default abstract class AbstractEntity {
-  @PrimaryColumn('uuid')
-  id!: string;
-}
+// Empty marker base — exists only to constrain the generic Entity parameter
+// in the Mapper<Entity, Domain> interface. Carries no fields of its own;
+// every entity declares its own primary key explicitly.
+export abstract class AbstractEntity {}
