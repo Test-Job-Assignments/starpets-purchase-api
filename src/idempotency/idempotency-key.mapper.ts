@@ -1,9 +1,19 @@
 import { Injectable } from '@nestjs/common';
 
 import { Mapper } from '@/common/mappers/mapper.interface';
+import { JsonB } from '@/common/types/jsonb';
 
-import { IdempotencyKey } from './idempotency-key';
+import {
+  BodyWithErrorMessage,
+  BodyWithPurchaseId,
+  IdempotencyKey,
+} from './idempotency-key';
 import { IdempotencyKeyEntity } from './idempotency-key.entity';
+import {
+  CorruptedIdempotencyRecordException,
+  InvalidIdempotencyResponseBodyException,
+} from './idempotency-keys.exceptions';
+import { IdempotencyStatuses } from './idempotency-statuses.enum';
 
 @Injectable()
 export class IdempotencyKeyMapper implements Mapper<
@@ -11,13 +21,29 @@ export class IdempotencyKeyMapper implements Mapper<
   IdempotencyKey
 > {
   toDomain(entity: IdempotencyKeyEntity): IdempotencyKey {
-    return {
-      key: entity.key,
-      requestHash: entity.requestHash,
-      status: entity.status,
-      responseBody: entity.responseBody,
-      responseStatus: entity.responseStatus,
-    };
+    switch (entity.status) {
+      case IdempotencyStatuses.PROCESSING:
+        return {
+          key: entity.key,
+          requestHash: entity.requestHash,
+          status: entity.status,
+          responseBody: null,
+          responseStatus: null,
+        };
+      case IdempotencyStatuses.COMPLETED:
+        if (!entity.responseBody || entity.responseStatus === null)
+          throw new CorruptedIdempotencyRecordException();
+
+        return {
+          key: entity.key,
+          requestHash: entity.requestHash,
+          status: entity.status,
+          responseBody: toDomainResponseBody(entity.responseBody),
+          responseStatus: entity.responseStatus,
+        };
+      default:
+        throw new CorruptedIdempotencyRecordException();
+    }
   }
 
   toEntity(domain: IdempotencyKey): IdempotencyKeyEntity {
@@ -29,4 +55,20 @@ export class IdempotencyKeyMapper implements Mapper<
       responseStatus: domain.responseStatus,
     } as IdempotencyKeyEntity;
   }
+}
+
+function toDomainResponseBody(
+  body: JsonB,
+): BodyWithPurchaseId | BodyWithErrorMessage {
+  if (isBodyWithPurchaseId(body)) return body;
+  if (isBodyWithErrorMessage(body)) return body;
+  throw new InvalidIdempotencyResponseBodyException();
+}
+
+function isBodyWithPurchaseId(value: JsonB): value is BodyWithPurchaseId {
+  return typeof value.purchaseId === 'string';
+}
+
+function isBodyWithErrorMessage(value: JsonB): value is BodyWithErrorMessage {
+  return typeof value.message === 'string';
 }

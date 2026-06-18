@@ -1,6 +1,5 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
-import { AbstractEntity } from '@/common/entities/abstract.entity';
 import type { JsonB } from '@/common/types/jsonb';
 
 import { OutboxEventTypes } from './outbox-event-types.enum';
@@ -9,7 +8,7 @@ import { OutboxEventTypes } from './outbox-event-types.enum';
 @Index('ix_outbox_events_unpublished', ['createdAt', 'id'], {
   where: 'published_at IS NULL',
 })
-export class OutboxEventEntity extends AbstractEntity {
+export class OutboxEventEntity {
   @PrimaryColumn('uuid', { name: 'id' })
   id!: string;
 

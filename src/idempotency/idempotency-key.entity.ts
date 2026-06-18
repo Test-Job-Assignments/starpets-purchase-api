@@ -1,12 +1,11 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { AbstractEntity } from '@/common/entities/abstract.entity';
 import type { JsonB } from '@/common/types/jsonb';
 
 import { IdempotencyStatuses } from './idempotency-statuses.enum';
 
 @Entity('idempotency_keys')
-export class IdempotencyKeyEntity extends AbstractEntity {
+export class IdempotencyKeyEntity {
   @PrimaryColumn('varchar')
   key!: string;
 

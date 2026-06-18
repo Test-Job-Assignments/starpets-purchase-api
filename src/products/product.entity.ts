@@ -7,7 +7,6 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 
-import { AbstractEntity } from '@/common/entities/abstract.entity';
 import { UserEntity } from '@/users/user.entity';
 
 import { ProductStatuses } from './product-statuses.enum';
@@ -18,7 +17,7 @@ import { ProductStatuses } from './product-statuses.enum';
   'status_valid',
   `"status" IN ('${ProductStatuses.AVAILABLE}', '${ProductStatuses.SOLD}')`,
 )
-export class ProductEntity extends AbstractEntity {
+export class ProductEntity {
   @PrimaryColumn('uuid')
   id!: string;
 

@@ -8,13 +8,12 @@ import {
   Unique,
 } from 'typeorm';
 
-import { AbstractEntity } from '@/common/entities/abstract.entity';
 import { ProductEntity } from '@/products/product.entity';
 import { UserEntity } from '@/users/user.entity';
 
 @Entity('purchases')
 @Unique('ux_purchases_product_id', ['productId'])
-export class PurchaseEntity extends AbstractEntity {
+export class PurchaseEntity {
   @PrimaryColumn('uuid')
   id!: string;
 
