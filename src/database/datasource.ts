@@ -23,7 +23,7 @@ export const dataSourceOptions: DataSourceOptions = {
     OutboxEventEntity,
     IdempotencyKeyEntity,
   ],
-  logging: true,
+  logging: process.env.NODE_ENV !== 'test',
   migrations: [join(__dirname, 'migrations', '*.{js,ts}')],
   synchronize: false,
 };

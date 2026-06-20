@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { IdGenerator } from '@/common/id-generator';
 import { IdempotencyModule } from '@/idempotency/idempotency.module';
 import { OutboxModule } from '@/outbox/outbox.module';
 import { ProductsModule } from '@/products/products.module';
@@ -19,6 +20,7 @@ import { PurchasesService } from './purchases.service';
     PurchasesRepository,
     PurchaseMapper,
     PurchaseConverter,
+    IdGenerator,
   ],
 })
 export class PurchasesModule {}

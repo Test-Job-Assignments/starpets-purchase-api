@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
-import { v7 as uuidv7 } from 'uuid';
 
+import { IdGenerator } from '@/common/id-generator';
 import {
   BodyWithErrorMessage,
   BodyWithPurchaseId,
@@ -77,6 +77,7 @@ export class PurchasesService {
     private readonly productsRepository: ProductsRepository,
     private readonly usersRepository: UsersRepository,
     private readonly purchasesRepository: PurchasesRepository,
+    private readonly idGenerator: IdGenerator,
     private readonly outboxEventsRepository: OutboxEventsRepository,
   ) {}
 
@@ -182,7 +183,7 @@ export class PurchasesService {
         await this.productsRepository.markSold(manager, input.productId);
 
         const purchase: Purchase = {
-          id: uuidv7(),
+          id: this.idGenerator.generate(),
           productId: input.productId,
           buyerId: input.buyerId,
           pricePaid: product.price,
@@ -190,7 +191,7 @@ export class PurchasesService {
         await this.purchasesRepository.insert(manager, purchase);
 
         const outboxEvent: OutboxEvent = {
-          id: uuidv7(),
+          id: this.idGenerator.generate(),
           eventType: OutboxEventTypes.PURCHASE_CREATED,
           payload: {
             purchaseId: purchase.id,
