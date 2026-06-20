@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 
-import { JsonB } from '@/common/types/jsonb';
+import { JsonB } from '@/common/jsonb';
 
 import { IdempotencyKey } from './idempotency-key';
 import { IdempotencyKeyEntity } from './idempotency-key.entity';

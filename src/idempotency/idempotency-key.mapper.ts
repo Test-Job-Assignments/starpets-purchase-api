@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { Mapper } from '@/common/mappers/mapper.interface';
-import { JsonB } from '@/common/types/jsonb';
+import { JsonB } from '@/common/jsonb';
+import { Mapper } from '@/common/mapper.interface';
 
 import {
   BodyWithErrorMessage,

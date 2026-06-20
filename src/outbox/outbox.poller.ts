@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
 
-import { EnvVar } from '@/common/constants/env-vars.enum';
+import { EnvVar } from '@/common/env-vars.enum';
 
 import { OutboxEventsRepository } from './outbox-events.repository';
 import { RabbitMqPublisher } from './rabbitmq-publisher';

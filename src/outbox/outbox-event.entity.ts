@@ -1,6 +1,6 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
-import type { JsonB } from '@/common/types/jsonb';
+import type { JsonB } from '@/common/jsonb';
 
 import { OutboxEventTypes } from './outbox-event-types.enum';
 

@@ -7,8 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Channel, ChannelModel, connect } from 'amqplib';
 
-import { EnvVar } from '@/common/constants/env-vars.enum';
-import { JsonB } from '@/common/types/jsonb';
+import { EnvVar } from '@/common/env-vars.enum';
+import { JsonB } from '@/common/jsonb';
 
 const DEFAULT_EXCHANGE = 'purchase-events';
 
@@ -64,7 +64,9 @@ export class RabbitMqPublisher implements OnModuleInit, OnModuleDestroy {
   }
 
   private async establishConnection(): Promise<void> {
-    const url = this.configService.getOrThrow<string>(EnvVar.RABBITMQ_URL);
+    const url = this.configService.getOrThrow<string>(
+      EnvVar.RABBITMQ_CONNECTION,
+    );
     const connection = await connect(url);
 
     // Without these handlers, a dropped connection leaves `this.channel`

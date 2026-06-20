@@ -2,7 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
-import { EnvVar } from '@/common/constants/env-vars.enum';
+import { EnvVar } from '@/common/env-vars.enum';
 import { HttpExceptionFilter } from '@/common/http-exception.filter';
 
 import { AppModule } from './app.module';

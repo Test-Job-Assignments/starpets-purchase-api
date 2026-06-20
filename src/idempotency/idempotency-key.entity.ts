@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import type { JsonB } from '@/common/types/jsonb';
+import type { JsonB } from '@/common/jsonb';
 
 import { IdempotencyStatuses } from './idempotency-statuses.enum';
 

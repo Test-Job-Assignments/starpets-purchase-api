@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { Mapper } from '@/common/mappers/mapper.interface';
+import { Mapper } from '@/common/mapper.interface';
 
 import { Purchase } from './purchase';
 import { PurchaseEntity } from './purchase.entity';
