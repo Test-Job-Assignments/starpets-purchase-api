@@ -1,98 +1,159 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Purchase API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Сервис обработки покупок на маркетплейсе: покупатель платит продавцу за товар.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Быстрый старт
 
 ```bash
-$ yarn install
+docker compose up --build -d
+yarn install
+yarn migration:run
 ```
 
-## Compile and run the project
+API доступен на `http://localhost:3033` (порт задаётся в `.env`). Management UI RabbitMQ — на `http://localhost:15672` (`guest`/`guest`).
+
+Без Docker: поднять Postgres и RabbitMQ самостоятельно (например `docker compose up -d postgres rabbitmq`), затем просто:
 
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+yarn migration:run
+yarn start:dev
 ```
 
-## Run tests
+`.env` уже настроен для этого случая (`DB_HOST=localhost`); внутри Docker-сети `docker-compose.yml` переопределяет `DB_HOST` на `postgres` для контейнера `app`, так что менять `.env` под разные способы запуска не нужно.
 
-```bash
-# unit tests
-$ yarn run test
+### Переменные окружения
 
-# e2e tests
-$ yarn run test:e2e
+Заданы в `.env`. Подключение к Postgres (`src/database/datasource.ts`, его использует и приложение, и TypeORM CLI) собирается из пяти отдельных переменных, а не из строки подключения:
 
-# test coverage
-$ yarn run test:cov
+| Переменная | Назначение |
+| --- | --- |
+| `PORT` | порт приложения |
+| `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME` | из них реально строится подключение к Postgres — и приложением, и `yarn migration:run`. Все пять опциональны — без них код подставит `localhost`/`5432`/`postgres`/`postgres`/`starpets`, те же значения, что и в `.env`. `DB_HOST=localhost` в `.env` — для запуска вне Docker; внутри docker-сети `docker-compose.yml` переопределяет его на `postgres` |
+| `RABBITMQ_CONNECTION` | строка подключения AMQP, реально читается приложением (`RabbitMqPublisher`). Опциональна — без неё подставится `amqp://guest:guest@localhost:5672`; в `.env` указывает на `localhost`, в docker-сети переопределяется на `rabbitmq` |
+| `RABBITMQ_USERNAME`, `RABBITMQ_PASSWORD`, `RABBITMQ_PORT`, `RABBITMQ_MANAGEMENT_PORT` | используются только Docker Compose, чтобы поднять и сконфигурировать сам RabbitMQ |
+| `RABBITMQ_EXCHANGE` | exchange для публикации событий (по умолчанию `purchase-events`) |
+| `OUTBOX_POLL_INTERVAL_MS` | интервал опроса outbox-поллера (по умолчанию `2000`) |
+| `OUTBOX_BATCH_SIZE` | сколько событий поллер забирает за раз (по умолчанию `10`) |
+
+`DB_CONNECTION` присутствует в `.env`, но фактически не используется ни одним местом в коде — подключение к Postgres всегда идёт через `DB_HOST`/`DB_PORT`/`DB_USERNAME`/`DB_PASSWORD`/`DB_NAME`.
+
+В Docker-сети `docker-compose.yml` передаёт `app`-контейнеру `DB_HOST=postgres` и `RABBITMQ_CONNECTION` с хостом `rabbitmq` — то есть имена сервисов вместо `localhost`.
+
+## API
+
+### `POST /purchases`
+
+Заголовок `Idempotency-Key` обязателен.
+
+Тело запроса:
+
+```json
+{ "buyerId": "<uuid>", "productId": "<uuid>" }
 ```
 
-## Deployment
+Ответы:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| Статус | Когда |
+| --- | --- |
+| `201 Created` | Покупка прошла. Тело: `{ "purchaseId": "<uuid>" }` |
+| `400 Bad Request` | Нет `Idempotency-Key`, либо покупатель и продавец совпадают |
+| `404 Not Found` | Товар, покупатель или продавец не найдены |
+| `409 Conflict` | Товар уже продан, либо тот же `Idempotency-Key` использован с другим телом запроса |
+| `422 Unprocessable Entity` | Недостаточно средств у покупателя |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Повторный запрос с тем же ключом и тем же телом возвращает тот же статус и тело ответа — без повторного выполнения бизнес-логики.
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
-```
+## Архитектура
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Сервис состоит из одного HTTP API и фонового процесса для публикации событий.
 
-## Resources
+`PurchasesController` принимает запрос и проверяет наличие `Idempotency-Key`.
 
-Check out a few resources that may come in handy when working with NestJS:
+`PurchasesService` управляет всей покупкой: выполняет проверки, работает с блокировками, переводит деньги, создаёт запись о покупке и сохраняет событие в outbox.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Все изменения выполняются внутри одной транзакции PostgreSQL.
 
-## Support
+Фоновый `OutboxPoller` периодически забирает неопубликованные события из базы и отправляет их в RabbitMQ.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Транзакция покупки
 
-## Stay in touch
+Вся покупка выполняется в одной транзакции PostgreSQL.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+В транзакцию входят:
 
-## License
+- резервирование idempotency-ключа;
+- проверка товара и пользователей;
+- перевод денег;
+- перевод товара в статус `SOLD`;
+- создание покупки;
+- запись события в outbox.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Если любой шаг завершается ошибкой, все изменения откатываются.
+
+## Блокировки
+
+Для защиты от двойной продажи используются блокировки строк через `FOR UPDATE`.
+
+Сначала блокируется товар, затем пользователи.
+
+Пользователи всегда блокируются в одном порядке по `id`, чтобы избежать дедлоков.
+
+Дополнительно важные ограничения продублированы на уровне базы данных через `CHECK` и `UNIQUE`.
+
+## Идемпотентность
+
+Каждый запрос должен содержать `Idempotency-Key`.
+
+Результат выполнения сохраняется вместе с ключом. Повторный запрос с тем же ключом и тем же телом получает тот же результат без повторного выполнения бизнес-логики.
+
+Это относится как к успешным покупкам, так и к бизнес-ошибкам.
+
+Ошибки уровня `5xx` не кэшируются. При таких сбоях транзакция полностью откатывается и запрос можно безопасно повторить.
+
+## Outbox Pattern
+
+RabbitMQ не участвует в транзакции PostgreSQL, поэтому событие нельзя надёжно отправить одновременно с коммитом покупки.
+
+Чтобы избежать потери событий, покупка сначала сохраняет запись в таблицу `outbox_events`.
+
+После коммита отдельный процесс публикует событие в RabbitMQ.
+
+Если публикация завершилась ошибкой, событие останется в outbox и будет отправлено позже.
+
+## Ключевые решения
+
+### Пессимистичные блокировки
+
+Используются пессимистичные блокировки, потому что покупка одновременно изменяет несколько связанных записей.
+
+Такой подход упрощает логику и гарантирует консистентность данных при конкурентных запросах.
+
+### READ COMMITTED
+
+Используется уровень изоляции `READ COMMITTED`.
+
+Поскольку необходимые строки явно блокируются через `FOR UPDATE`, дополнительной пользы от `SERIALIZABLE` здесь нет.
+
+### Без интерфейсов репозиториев
+
+У каждого репозитория сейчас одна реализация.
+
+Дополнительный слой интерфейсов не даёт заметной пользы, но усложняет навигацию по проекту.
+
+Если появятся альтернативные реализации или новые требования к тестированию, интерфейсы можно будет добавить позже.
+
+### Без лишних паттернов
+
+В проекте нет CQRS, Saga, Event Sourcing, Redis, API Gateway и отдельных доменных сервисов.
+
+Для одного сервиса и одной базы данных они не решают реальных проблем, но заметно усложняют решение.
+
+## Тестирование
+
+Основной упор сделан на интеграционные тесты.
+
+Тесты запускаются против настоящих PostgreSQL и RabbitMQ через Testcontainers.
+
+Проверяются реальные блокировки, транзакции, ограничения базы данных и работа outbox-механизма.
+
+Для проверок состояния базы используется прямой SQL, чтобы тестировать фактическое состояние данных, а не повторно использовать код приложения.

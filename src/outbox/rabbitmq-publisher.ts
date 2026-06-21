@@ -10,7 +10,8 @@ import { Channel, ChannelModel, connect } from 'amqplib';
 import { EnvVar } from '@/common/env-vars.enum';
 import { JsonB } from '@/common/jsonb';
 
-const DEFAULT_EXCHANGE = 'purchase-events';
+const DEFAULT_RABITMQ_EXCHANGE = 'purchase-events';
+const DEFAULT_RABITMQ_CONNECTION = 'amqp://guest:guest@localhost:5672';
 
 @Injectable()
 export class RabbitMqPublisher implements OnModuleInit, OnModuleDestroy {
@@ -51,9 +52,6 @@ export class RabbitMqPublisher implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  // The outbox poller already calls publish() once per retry cycle, so
-  // reconnecting lazily here is enough to recover from a dropped broker
-  // connection — no separate reconnect scheduler is needed.
   private async connect(): Promise<void> {
     if (!this.connecting) {
       this.connecting = this.establishConnection().finally(() => {
@@ -64,14 +62,11 @@ export class RabbitMqPublisher implements OnModuleInit, OnModuleDestroy {
   }
 
   private async establishConnection(): Promise<void> {
-    const url = this.configService.getOrThrow<string>(
-      EnvVar.RABBITMQ_CONNECTION,
-    );
+    const url =
+      this.configService.get<string>(EnvVar.RABBITMQ_CONNECTION) ??
+      DEFAULT_RABITMQ_CONNECTION;
     const connection = await connect(url);
 
-    // Without these handlers, a dropped connection leaves `this.channel`
-    // pointing at a dead object forever — publish() would keep throwing
-    // "Channel closed" even after the broker comes back, with no recovery.
     connection.on('close', () => {
       this.connection = undefined;
       this.channel = undefined;
@@ -95,7 +90,7 @@ export class RabbitMqPublisher implements OnModuleInit, OnModuleDestroy {
   private exchangeName(): string {
     return (
       this.configService.get<string>(EnvVar.RABBITMQ_EXCHANGE) ??
-      DEFAULT_EXCHANGE
+      DEFAULT_RABITMQ_EXCHANGE
     );
   }
 }

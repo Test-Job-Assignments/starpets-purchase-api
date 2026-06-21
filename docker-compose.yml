@@ -11,8 +11,9 @@ services:
     environment:
       # .env points these at "localhost" for running the app directly on the
       # host; inside the compose network they must resolve to the sibling
-      # service names instead.
-      DB_CONNECTION: postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      # service names instead. DB_HOST is what datasource.ts actually reads —
+      # RABBITMQ_CONNECTION is the only "*_CONNECTION" variable the app reads.
+      DB_HOST: postgres
       RABBITMQ_CONNECTION: amqp://${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD}@rabbitmq:5672
     ports:
       - '${PORT}:${PORT}'
