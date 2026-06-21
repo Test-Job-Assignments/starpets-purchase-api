@@ -22,7 +22,7 @@ export interface BootstrapOptions {
   outboxPollIntervalMs?: number;
 }
 
-// AppModule (via src/database/datasource.ts) reads DB_HOST/RABBITMQ_CONNECTION/etc.
+// AppModule (via src/database/datasource.ts) reads DB_CONNECTION/RABBITMQ_CONNECTION/etc.
 // from process.env at *import* time, not through a runtime-injected config factory.
 // A static top-level `import` would be evaluated before the containers below even
 // start, so AppModule must be require()'d lazily, after the env vars are set.
@@ -33,11 +33,9 @@ export async function bootstrapTestApp(
   const rabbitmq = await startRabbitMqContainer();
 
   process.env.NODE_ENV = 'test';
-  process.env.DB_HOST = postgres.getHost();
-  process.env.DB_PORT = String(postgres.getMappedPort(5432));
-  process.env.DB_USERNAME = 'postgres';
-  process.env.DB_PASSWORD = 'postgres';
-  process.env.DB_NAME = 'starpets_test';
+  // Testcontainers assigns the host port at runtime, so the connection
+  // string has to be built here rather than read from a static .env value.
+  process.env.DB_CONNECTION = `postgresql://postgres:postgres@${postgres.getHost()}:${postgres.getMappedPort(5432)}/starpets_test`;
   process.env.RABBITMQ_CONNECTION = `amqp://guest:guest@${rabbitmq.getHost()}:${rabbitmq.getMappedPort(5672)}`;
   process.env.RABBITMQ_EXCHANGE = 'purchase-events';
   process.env.OUTBOX_POLL_INTERVAL_MS = String(

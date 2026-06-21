@@ -6,15 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
-      # .env points these at "localhost" for running the app directly on the
-      # host; inside the compose network they must resolve to the sibling
-      # service names instead. DB_HOST is what datasource.ts actually reads —
-      # RABBITMQ_CONNECTION is the only "*_CONNECTION" variable the app reads.
-      DB_HOST: postgres
       RABBITMQ_CONNECTION: amqp://${RABBITMQ_USERNAME}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      DB_CONNECTION: postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
     ports:
       - '${PORT}:${PORT}'
     depends_on:
