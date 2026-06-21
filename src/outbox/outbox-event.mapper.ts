@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
-import { Mapper } from '@/common/mapper.interface';
+import { JsonB } from '@/common/jsonb';
 
 import { OutboxEvent } from './outbox-event';
 import { OutboxEventEntity } from './outbox-event.entity';
 
 @Injectable()
-export class OutboxEventMapper implements Mapper<
-  OutboxEventEntity,
-  OutboxEvent
-> {
+export class OutboxEventMapper {
   toDomain(entity: OutboxEventEntity): OutboxEvent {
     return {
       id: entity.id,
@@ -18,11 +16,13 @@ export class OutboxEventMapper implements Mapper<
     };
   }
 
-  toEntity(domain: OutboxEvent): OutboxEventEntity {
+  toEntity(domain: OutboxEvent): QueryDeepPartialEntity<OutboxEventEntity> {
     return {
       id: domain.id,
       eventType: domain.eventType,
-      payload: domain.payload,
-    } as OutboxEventEntity;
+      // QueryDeepPartialEntity only accepts index-signature columns typed
+      // `any` (JsonB), not the domain type's `unknown` — see jsonb.ts.
+      payload: domain.payload as JsonB,
+    };
   }
 }

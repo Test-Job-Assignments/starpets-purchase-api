@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 import { JsonB } from '@/common/jsonb';
-import { Mapper } from '@/common/mapper.interface';
 
 import {
   BodyWithErrorMessage,
   BodyWithPurchaseId,
   IdempotencyKey,
+  isBodyWithErrorMessage,
+  isBodyWithPurchaseId,
 } from './idempotency-key';
 import { IdempotencyKeyEntity } from './idempotency-key.entity';
 import {
@@ -16,10 +17,7 @@ import {
 import { IdempotencyStatuses } from './idempotency-statuses.enum';
 
 @Injectable()
-export class IdempotencyKeyMapper implements Mapper<
-  IdempotencyKeyEntity,
-  IdempotencyKey
-> {
+export class IdempotencyKeyMapper {
   toDomain(entity: IdempotencyKeyEntity): IdempotencyKey {
     switch (entity.status) {
       case IdempotencyStatuses.PROCESSING:
@@ -45,16 +43,6 @@ export class IdempotencyKeyMapper implements Mapper<
         throw new CorruptedIdempotencyRecordException();
     }
   }
-
-  toEntity(domain: IdempotencyKey): IdempotencyKeyEntity {
-    return {
-      key: domain.key,
-      requestHash: domain.requestHash,
-      status: domain.status,
-      responseBody: domain.responseBody,
-      responseStatus: domain.responseStatus,
-    } as IdempotencyKeyEntity;
-  }
 }
 
 function toDomainResponseBody(
@@ -63,12 +51,4 @@ function toDomainResponseBody(
   if (isBodyWithPurchaseId(body)) return body;
   if (isBodyWithErrorMessage(body)) return body;
   throw new InvalidIdempotencyResponseBodyException();
-}
-
-function isBodyWithPurchaseId(value: JsonB): value is BodyWithPurchaseId {
-  return typeof value.purchaseId === 'string';
-}
-
-function isBodyWithErrorMessage(value: JsonB): value is BodyWithErrorMessage {
-  return typeof value.message === 'string';
 }

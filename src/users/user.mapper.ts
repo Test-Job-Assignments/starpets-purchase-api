@@ -1,23 +1,14 @@
 import { Injectable } from '@nestjs/common';
 
-import { Mapper } from '@/common/mapper.interface';
-
 import { User } from './user';
 import { UserEntity } from './user.entity';
 
 @Injectable()
-export class UserMapper implements Mapper<UserEntity, User> {
+export class UserMapper {
   toDomain(entity: UserEntity): User {
     return {
       id: entity.id,
-      balance: entity.balance,
-    };
-  }
-
-  toEntity(domain: User): UserEntity {
-    return {
-      id: domain.id,
-      balance: domain.balance,
+      balance: BigInt(entity.balance),
     };
   }
 }

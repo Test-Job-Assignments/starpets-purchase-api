@@ -45,7 +45,8 @@ export async function bootstrapTestApp(
   );
   process.env.OUTBOX_BATCH_SIZE = '10';
 
-  const { AppModule } = require('@/app.module') as typeof import('@/app.module');
+  const { AppModule } =
+    require('@/app.module') as typeof import('@/app.module');
   const { HttpExceptionFilter } =
     require('@/common/http-exception.filter') as typeof import('@/common/http-exception.filter');
 

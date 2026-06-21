@@ -1,27 +1,26 @@
 import { Injectable } from '@nestjs/common';
-
-import { Mapper } from '@/common/mapper.interface';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 import { Purchase } from './purchase';
 import { PurchaseEntity } from './purchase.entity';
 
 @Injectable()
-export class PurchaseMapper implements Mapper<PurchaseEntity, Purchase> {
+export class PurchaseMapper {
   toDomain(entity: PurchaseEntity): Purchase {
     return {
       id: entity.id,
       productId: entity.productId,
       buyerId: entity.buyerId,
-      pricePaid: entity.pricePaid,
+      pricePaid: BigInt(entity.pricePaid),
     };
   }
 
-  toEntity(domain: Purchase): PurchaseEntity {
+  toEntity(domain: Purchase): QueryDeepPartialEntity<PurchaseEntity> {
     return {
       id: domain.id,
       productId: domain.productId,
       buyerId: domain.buyerId,
-      pricePaid: domain.pricePaid,
-    } as PurchaseEntity;
+      pricePaid: domain.pricePaid.toString(),
+    };
   }
 }

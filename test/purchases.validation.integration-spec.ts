@@ -1,5 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+
+import { HttpStatus } from '@nestjs/common';
+
+import { ProductStatuses } from '@/products/product-statuses.enum';
 
 import { postPurchase } from './support/http';
 import {
@@ -35,7 +38,12 @@ describe('Purchases — validation and business-rule rejections (integration)', 
   it('Scenario 2 — rejects a purchase of an already-sold product', async () => {
     const buyerId = await seedUser(ctx.dataSource, 10_000);
     const sellerId = await seedUser(ctx.dataSource, 5_000);
-    const productId = await seedProduct(ctx.dataSource, sellerId, 3_000, 'sold');
+    const productId = await seedProduct(
+      ctx.dataSource,
+      sellerId,
+      3_000,
+      'sold',
+    );
 
     const response = await postPurchase(
       ctx.app,
@@ -73,9 +81,7 @@ describe('Purchases — validation and business-rule rejections (integration)', 
 
     expect(await getUserBalance(ctx.dataSource, buyerId)).toBe('100');
     expect(await getUserBalance(ctx.dataSource, sellerId)).toBe('5000');
-    expect(await getProductStatus(ctx.dataSource, productId)).toBe(
-      'available',
-    );
+    expect(await getProductStatus(ctx.dataSource, productId)).toBe('available');
     expect(await countPurchases(ctx.dataSource)).toBe(0);
     expect(await countOutboxEvents(ctx.dataSource)).toBe(0);
 
@@ -135,7 +141,7 @@ describe('Purchases — validation and business-rule rejections (integration)', 
 
     expect(await getUserBalance(ctx.dataSource, sellerId)).toBe('5000');
     expect(await getProductStatus(ctx.dataSource, productId)).toBe(
-      'available',
+      ProductStatuses.AVAILABLE,
     );
     expect(await countPurchases(ctx.dataSource)).toBe(0);
   });
@@ -187,7 +193,7 @@ describe('Purchases — validation and business-rule rejections (integration)', 
 
     expect(await getUserBalance(ctx.dataSource, userId)).toBe('10000');
     expect(await getProductStatus(ctx.dataSource, productId)).toBe(
-      'available',
+      ProductStatuses.AVAILABLE,
     );
     expect(await countPurchases(ctx.dataSource)).toBe(0);
   });

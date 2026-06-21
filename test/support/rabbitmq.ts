@@ -18,7 +18,9 @@ export async function bindTestQueue(
   return { connection, channel, queueName: queue };
 }
 
-export async function closeTestQueue(client: RabbitMqTestClient): Promise<void> {
+export async function closeTestQueue(
+  client: RabbitMqTestClient,
+): Promise<void> {
   await client.channel.close();
   await client.connection.close();
 }
@@ -40,7 +42,7 @@ export async function waitForNextMessage(
   while (Date.now() < deadline) {
     const message = await client.channel.get(client.queueName, {});
     if (message) {
-      await client.channel.ack(message);
+      client.channel.ack(message);
       return {
         routingKey: message.fields.routingKey,
         payload: JSON.parse(message.content.toString('utf-8')),

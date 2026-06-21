@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 
 import { OutboxEventsRepository } from '@/outbox/outbox-events.repository';
+import { ProductStatuses } from '@/products/product-statuses.enum';
 
 import { postPurchase } from './support/http';
 import {
@@ -54,7 +55,7 @@ describe('Purchases — transaction rollback on unexpected failure (integration)
     expect(await getUserBalance(ctx.dataSource, buyerId)).toBe('10000');
     expect(await getUserBalance(ctx.dataSource, sellerId)).toBe('5000');
     expect(await getProductStatus(ctx.dataSource, productId)).toBe(
-      'available',
+      ProductStatuses.AVAILABLE,
     );
     expect(await countPurchases(ctx.dataSource)).toBe(0);
     expect(await countOutboxEvents(ctx.dataSource)).toBe(0);
@@ -75,7 +76,9 @@ describe('Purchases — transaction rollback on unexpected failure (integration)
 
     expect(retried.status).toBe(HttpStatus.CREATED);
     expect(await getUserBalance(ctx.dataSource, buyerId)).toBe('7000');
-    expect(await getProductStatus(ctx.dataSource, productId)).toBe('sold');
+    expect(await getProductStatus(ctx.dataSource, productId)).toBe(
+      ProductStatuses.SOLD,
+    );
     expect(await countOutboxEvents(ctx.dataSource)).toBe(1);
   });
 });
